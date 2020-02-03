@@ -21,14 +21,11 @@ public enum RenaultZoeChannelId implements io.openems.edge.common.channel.Channe
 	HV_BAT_INSTANT_CURRENT(Doc.of(OpenemsType.FLOAT).unit(Unit.AMPERE).accessMode(AccessMode.READ_ONLY)), //
 	HV_NETWORK_VOLTAGE(Doc.of(OpenemsType.INTEGER).unit(Unit.VOLT).accessMode(AccessMode.READ_ONLY)), //
 	HV_BATTERY_MAX_TEMP(Doc.of(OpenemsType.INTEGER).unit(Unit.DEGREE_CELSIUS).accessMode(AccessMode.READ_ONLY)), //
-	HV_BAT_STATE(Doc.of(HvBatState.values())), //
 	HV_BAT_HEALTH(Doc.of(OpenemsType.INTEGER).unit(Unit.PERCENT).accessMode(AccessMode.READ_ONLY)), //
 	HV_BATTERY_TEMP(Doc.of(OpenemsType.INTEGER).unit(Unit.DEGREE_CELSIUS).accessMode(AccessMode.READ_ONLY)), //
 	HV_ISOLATON_IMPEDANCE(Doc.of(OpenemsType.INTEGER).unit(Unit.OHM).accessMode(AccessMode.READ_ONLY)), //
 	LBCPRUN_ANSWER(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
-	HV_POWER_CONNECTION(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
-	HV_BAT_LEVEL1_FAILURE(Doc.of(HvBatLevel1Failure.values())), //
-	HV_BAT_LEVEL2_FAILURE(Doc.of(HvBatLevel2Failure.values())), //
+	
 	HV_BAT_SERIAL_NUMBER(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	LBC2_REFUSE_TO_SLEEP(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	ELEC_MASCHINE_SPEED(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
@@ -37,7 +34,6 @@ public enum RenaultZoeChannelId implements io.openems.edge.common.channel.Channe
 	WAKE_UP_TYPE(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	LBCPRUN_KEY(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	OPERATING_TYPE(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
-	POWER_RELAY_STATE(Doc.of(PowerRelayState.values())), //
 	DISTANCE_TOTALIZER_COPY(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	ABSOLUTE_TIME_SINCE_1RST_IGNITION(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	CELL_LOWEST_VOLTAGE_RCY(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
@@ -49,23 +45,31 @@ public enum RenaultZoeChannelId implements io.openems.edge.common.channel.Channe
 	SAFETY_MODE_1_FLAG_RCY(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	LBCPRUN_KEY_RCY(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	VEHICLE_ID(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
-	END_OF_CHARGE_REQUEST(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	LBC_REFUSE_TO_SLEEP(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	ISOL_DIAG_AUTHORISATION(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	SAFETY_MODE_1_FLAG(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //	
 	START_STOP(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_WRITE)), //
 	
-	
-	/*
-	 * Not AVAILABLE
-	 */
-
 	// EnumReadChannels
-	STR_ST(Doc.of(StringStatus.values()).accessMode(AccessMode.READ_ONLY)), //
+		HV_BAT_STATE(Doc.of(HvBatState.values())), //
+		HV_BAT_LEVEL1_FAILURE(Doc.of(HvBatLevel1Failure.values())), //
+		HV_BAT_LEVEL2_FAILURE(Doc.of(HvBatLevel2Failure.values())), //
+		POWER_RELAY_STATE(Doc.of(PowerRelayState.values())), //
+		HV_POWER_CONNECTION(Doc.of(HvPowerConnection.values())), //
+		END_OF_CHARGE_REQUEST(Doc.of(EndOfChargeRequest.values())), //
+		
+	
+	// Additional Channel
+	BATTERY_ID(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE)), //
+	AVAILABLE_ENERGY_CHARGE(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE)), //
+	
+	
+	
+//	STR_ST(Doc.of(StringStatus.values()).accessMode(AccessMode.READ_ONLY)), //
 
 	// EnumWriteChannels
-	EN_STRING(Doc.of(EnableString.values()).accessMode(AccessMode.READ_WRITE)), //
-	CON_STRING(Doc.of(StartStopString.values()).accessMode(AccessMode.READ_WRITE)), //
+//	EN_STRING(Doc.of(EnableString.values()).accessMode(AccessMode.READ_WRITE)), //
+//	CON_STRING(Doc.of(StartStopString.values()).accessMode(AccessMode.READ_WRITE)), //
 
 //	// StateChannels
 //	ALARM_STRING_1(Doc.of(Level.WARNING).text("Alarm Ids specific")), //
