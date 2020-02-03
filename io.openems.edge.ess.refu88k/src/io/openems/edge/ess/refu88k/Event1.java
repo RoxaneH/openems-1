@@ -7,7 +7,7 @@ public enum Event1 implements OptionsEnum {
 	GROUND_FAULT(0, "Ground fault"),
 	DC_OVER_VOLTAGE(1, "Dc over voltage"),
 	AC_DISCONNECT(2, "AC disconnect open"),
-	DC_DISCONNET(3, "DC disconnect open"),
+	DC_DISCONNECT(3, "DC disconnect open"),
 	GRID_DISCONNECT(4, "Grid shutdown"),
 	CABINET_OPEN(5, "Cabinet open"),
 	MANUAL_SHUTDOWN(6, "Manual shutdown"),

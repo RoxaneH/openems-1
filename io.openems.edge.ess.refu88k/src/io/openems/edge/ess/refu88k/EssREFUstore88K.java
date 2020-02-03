@@ -28,6 +28,7 @@ import io.openems.edge.bridge.modbus.api.AbstractOpenemsModbusComponent;
 import io.openems.edge.bridge.modbus.api.BridgeModbus;
 import io.openems.edge.bridge.modbus.api.ElementToChannelConverter;
 import io.openems.edge.bridge.modbus.api.ModbusProtocol;
+import io.openems.edge.bridge.modbus.api.element.BitsWordElement;
 import io.openems.edge.bridge.modbus.api.element.DummyRegisterElement;
 import io.openems.edge.bridge.modbus.api.element.SignedDoublewordElement;
 import io.openems.edge.bridge.modbus.api.element.SignedWordElement;
@@ -36,9 +37,13 @@ import io.openems.edge.bridge.modbus.api.element.UnsignedDoublewordElement;
 import io.openems.edge.bridge.modbus.api.element.UnsignedWordElement;
 import io.openems.edge.bridge.modbus.api.task.FC16WriteRegistersTask;
 import io.openems.edge.bridge.modbus.api.task.FC3ReadRegistersTask;
+import io.openems.edge.common.channel.BooleanWriteChannel;
+import io.openems.edge.common.channel.Channel;
 import io.openems.edge.common.channel.EnumReadChannel;
 import io.openems.edge.common.channel.EnumWriteChannel;
 import io.openems.edge.common.channel.IntegerWriteChannel;
+import io.openems.edge.common.channel.StateChannel;
+import io.openems.edge.common.channel.WriteChannel;
 import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.event.EdgeEventConstants;
 import io.openems.edge.common.modbusslave.ModbusSlave;
@@ -66,6 +71,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 		implements ManagedSymmetricEss, SymmetricEss, OpenemsComponent, EventHandler, ModbusSlave {
 
 	private final Logger log = LoggerFactory.getLogger(EssREFUstore88K.class);
+	private int inverterId = 0;
 	private Config config;
 
 	public static final int DEFAULT_UNIT_ID = 1;
@@ -114,6 +120,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 				config.modbus_id()); //
 		this.initializeBattery(config.battery_id());
 		this.config = config;
+		this.inverterId = config.inverterId();
 //		this.WATCHDOG = config.watchdoginterval();
 		this.channel(REFUStore88KChannelId.W_RTG).onChange((oldValue, newValue) -> {
 			@SuppressWarnings("unchecked")
@@ -639,6 +646,10 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	public int getPowerPrecision() {
 		return MAX_APPARENT_POWER / 1000;
 	}
+	
+	public int getInverterId() {
+		return this.inverterId;
+	}
 
 	/*
 	 * Supported Models First available Model = Start Address + 2 = 40002 Then 40002
@@ -726,13 +737,59 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 						m(REFUStore88KChannelId.TMP_SF, new UnsignedWordElement(SUNSPEC_103 + 37)), // 40107
 						m(REFUStore88KChannelId.ST, new UnsignedWordElement(SUNSPEC_103 + 38)), // 40108
 						m(REFUStore88KChannelId.ST_VND, new UnsignedWordElement(SUNSPEC_103 + 39)), // 40109
-						m(REFUStore88KChannelId.EVT_1, new UnsignedDoublewordElement(SUNSPEC_103 + 40)), // 40110
+						m(new BitsWordElement(SUNSPEC_103 + 40, this) //
+								.bit(0, REFUStore88KChannelId.GROUND_FAULT) //
+								.bit(1, REFUStore88KChannelId.DC_OVER_VOLTAGE) //
+								.bit(2, REFUStore88KChannelId.AC_DISCONNECT) //
+								.bit(3, REFUStore88KChannelId.DC_DISCONNECT) //
+								.bit(4, REFUStore88KChannelId.GRID_DISCONNECT) //
+								.bit(5, REFUStore88KChannelId.CABINET_OPEN) //
+								.bit(6, REFUStore88KChannelId.MANUAL_SHUTDOWN) //
+								.bit(7, REFUStore88KChannelId.OVER_TEMP) //
+								.bit(8, REFUStore88KChannelId.OVER_FREQUENCY) //
+								.bit(9, REFUStore88KChannelId.UNDER_FREQUENCY) //
+								.bit(10, REFUStore88KChannelId.AC_OVER_VOLT) //
+								.bit(11, REFUStore88KChannelId.AC_UNDER_VOLT) //
+								.bit(12, REFUStore88KChannelId.BLOWN_STRING_FUSE) //
+								.bit(13, REFUStore88KChannelId.UNDER_TEMP) //
+								.bit(14, REFUStore88KChannelId.MEMORY_LOSS) //
+								.bit(15, REFUStore88KChannelId.HW_TEST_FAILURE) //
+								),//
+						m(new BitsWordElement(SUNSPEC_103 + 41, this) //
+								.bit(0, REFUStore88KChannelId.OTHER_ALARM) //
+								.bit(1, REFUStore88KChannelId.OTHER_WARNING) //
+								),//
 						m(REFUStore88KChannelId.EVT_2, new UnsignedDoublewordElement(SUNSPEC_103 + 42)), // 40112
 						m(REFUStore88KChannelId.EVT_VND_1, new UnsignedDoublewordElement(SUNSPEC_103 + 44)), // 40114
 						m(REFUStore88KChannelId.EVT_VND_2, new UnsignedDoublewordElement(SUNSPEC_103 + 46)), // 40116
 						m(REFUStore88KChannelId.EVT_VND_3, new UnsignedDoublewordElement(SUNSPEC_103 + 48)), // 40118
 						m(REFUStore88KChannelId.EVT_VND_4, new UnsignedDoublewordElement(SUNSPEC_103 + 50))), // 40120
 
+				new FC16WriteRegistersTask(SUNSPEC_103 + 40,
+						m(new BitsWordElement(SUNSPEC_103 + 40, this) //
+								.bit(0, REFUStore88KChannelId.GROUND_FAULT) //
+								.bit(1, REFUStore88KChannelId.DC_OVER_VOLTAGE) //
+								.bit(2, REFUStore88KChannelId.AC_DISCONNECT) //
+								.bit(3, REFUStore88KChannelId.DC_DISCONNECT) //
+								.bit(4, REFUStore88KChannelId.GRID_DISCONNECT) //
+								.bit(5, REFUStore88KChannelId.CABINET_OPEN) //
+								.bit(6, REFUStore88KChannelId.MANUAL_SHUTDOWN) //
+								.bit(7, REFUStore88KChannelId.OVER_TEMP) //
+								.bit(8, REFUStore88KChannelId.OVER_FREQUENCY) //
+								.bit(9, REFUStore88KChannelId.UNDER_FREQUENCY) //
+								.bit(10, REFUStore88KChannelId.AC_OVER_VOLT) //
+								.bit(11, REFUStore88KChannelId.AC_UNDER_VOLT) //
+								.bit(12, REFUStore88KChannelId.BLOWN_STRING_FUSE) //
+								.bit(13, REFUStore88KChannelId.UNDER_TEMP) //
+								.bit(14, REFUStore88KChannelId.MEMORY_LOSS) //
+								.bit(15, REFUStore88KChannelId.HW_TEST_FAILURE) //
+								),//
+						m(new BitsWordElement(SUNSPEC_103 + 41, this) //
+								.bit(0, REFUStore88KChannelId.OTHER_ALARM) //
+								.bit(1, REFUStore88KChannelId.OTHER_WARNING) //
+								)//
+						),
+				
 				new FC3ReadRegistersTask(SUNSPEC_120, Priority.LOW, //
 						m(REFUStore88KChannelId.ID_120, new UnsignedWordElement(SUNSPEC_120)), // 40122
 						m(REFUStore88KChannelId.L_120, new UnsignedWordElement(SUNSPEC_120 + 1)), // 40123
