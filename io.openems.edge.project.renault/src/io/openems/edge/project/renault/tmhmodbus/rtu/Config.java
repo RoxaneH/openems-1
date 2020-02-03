@@ -34,7 +34,13 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 	@AttributeDefinition(name = "Technical Unit ID", description = "Sets the technical Unit-ID.")
 	int technicalUnitId() default 1;
-
+		
+	@AttributeDefinition(name = "Battery-ID", description = "ID of Battery.")
+	String[] batteryIds() default {};
+	
+	@AttributeDefinition(name = "Inverter-ID", description = "ID of Inverter.")
+	String[] inverterIds() default {};
+		
 	@AttributeDefinition(name = "Api-Timeout", description = "Sets the timeout in seconds for updates on Channels set by this Api.")
 	int apiTimeout() default 60;
 

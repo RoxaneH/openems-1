@@ -14,6 +14,7 @@ import com.ghgande.j2mod.modbus.slave.ModbusSlave;
 import com.ghgande.j2mod.modbus.slave.ModbusSlaveFactory;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 
+import io.openems.common.exceptions.OpenemsError.OpenemsNamedException;
 import io.openems.common.exceptions.OpenemsException;
 import io.openems.edge.common.component.ComponentManager;
 import io.openems.edge.common.component.OpenemsComponent;
@@ -38,12 +39,15 @@ public class RenaultModbusRtuApi extends AbstractRenaultModbusApi implements Con
 		super();
 	}
 
+
+	
 	@Activate
-	void activate(ComponentContext context, Config config) throws ModbusException, OpenemsException {
+	void activate(ComponentContext context, Config config) throws ModbusException, OpenemsNamedException {
 		super.activate(context, config.id(), config.alias(), config.enabled(), config.apiTimeout(),
-				config.technicalUnitId());
+				config.technicalUnitId(), config.batteryIds(), config.inverterIds());
 		this.config = config;
 	}
+
 
 	@Deactivate
 	protected void deactivate() {

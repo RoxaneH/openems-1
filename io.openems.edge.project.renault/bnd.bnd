@@ -12,7 +12,9 @@ Bundle-Version: 1.0.0.${tstamp}
 	io.openems.edge.common,\
 	io.openems.edge.controller.api,\
 	io.openems.edge.controller.api.common,\
-	slf4j.api	
+	slf4j.api,\
+	io.openems.edge.ess.refu88k;version=latest,\
+	io.openems.edge.ess.api;version=latest
 
 
 -testpath: \
