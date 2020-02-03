@@ -21,11 +21,17 @@ public class ModbusSlaveDefinitionBuilder {
 
 	private final TreeMap<Integer, ModbusRecord> records = new TreeMap<Integer, ModbusRecord>();
 
+	// next offset in the 0 range
+	private int nextOffset0 = 0;
+	
+	// next offset in the 1000 range
+	private int nextOffset1000 = 1_000;
+	
 	// next offset in the 30000 range
-	private int nextOffset30000 = 30_000;
+//	private int nextOffset30000 = 30_000;
 
 	// next offset in the 40000 range
-	private int nextOffset40000 = 40_000;
+//	private int nextOffset40000 = 40_000;
 
 	private ModbusSlaveDefinitionBuilder() {
 	}
@@ -120,14 +126,15 @@ public class ModbusSlaveDefinitionBuilder {
 		return this;
 	}
 
+	
 	private void add(ModbusRecord record) throws IllegalArgumentException {
 		Integer nextOffset = null;
-		if (record.getOffset() >= 40_000) {
-			nextOffset = this.nextOffset40000;
-			this.nextOffset40000 += record.getType().getWords();
-		} else if (record.getOffset() >= 30_000) {
-			nextOffset = this.nextOffset30000;
-			this.nextOffset30000 += record.getType().getWords();
+		if (record.getOffset() >= 1_000) {
+			nextOffset = this.nextOffset1000;
+			this.nextOffset1000 += record.getType().getWords();
+		} else if (record.getOffset() >= 0) {
+			nextOffset = this.nextOffset0;
+			this.nextOffset0 += record.getType().getWords();
 		}
 		if (nextOffset == null) {
 			throw new IllegalArgumentException(
@@ -140,6 +147,27 @@ public class ModbusSlaveDefinitionBuilder {
 		// TODO validate that this 'offset' is not already used (e.g. by float32)
 		this.records.put(record.getOffset(), record);
 	}
+	
+//	private void add(ModbusRecord record) throws IllegalArgumentException {
+//		Integer nextOffset = null;
+//		if (record.getOffset() >= 40_000) {
+//			nextOffset = this.nextOffset40000;
+//			this.nextOffset40000 += record.getType().getWords();
+//		} else if (record.getOffset() >= 30_000) {
+//			nextOffset = this.nextOffset30000;
+//			this.nextOffset30000 += record.getType().getWords();
+//		}
+//		if (nextOffset == null) {
+//			throw new IllegalArgumentException(
+//					"Offset [" + record.getOffset() + "] is not in range for Record [" + record + "]");
+//		}
+//		if (record.getOffset() != nextOffset) {
+//			throw new IllegalArgumentException("Expected offset [" + nextOffset + "] but got [" + record.getOffset()
+//					+ "] for Record [" + record + "]");
+//		}
+//		// TODO validate that this 'offset' is not already used (e.g. by float32)
+//		this.records.put(record.getOffset(), record);
+//	}
 
 	public TreeMap<Integer, ModbusRecord> build() {
 		return this.records;
