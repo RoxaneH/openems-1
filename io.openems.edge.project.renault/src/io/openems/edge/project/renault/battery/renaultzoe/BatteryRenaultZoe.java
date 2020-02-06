@@ -244,15 +244,26 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 	public Channel<Integer> getAvailableEnergyDischarge() {
 		return this.channel(RenaultZoeChannelId.AVAILABLE_ENERGY);
 	}
-	
+
 	public Channel<Integer> getAvailableEnergyCharge() {
-		try {
-			int availableEnergyCharge = (getCapacity().value().get() - getAvailableEnergyDischarge().value().get());
-			this.channel(RenaultZoeChannelId.AVAILABLE_ENERGY_CHARGE).setNextValue(availableEnergyCharge);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+		int availableEnergyCharge = (getCapacity().value().get() - getAvailableEnergyDischarge().value().get());
+		this.channel(RenaultZoeChannelId.AVAILABLE_ENERGY_CHARGE).setNextValue(availableEnergyCharge);
 		return this.channel(RenaultZoeChannelId.AVAILABLE_ENERGY_CHARGE);
+//		try {
+//			int availableEnergyCharge = (getCapacity().value().get() - getAvailableEnergyDischarge().value().get());
+//			this.channel(RenaultZoeChannelId.AVAILABLE_ENERGY_CHARGE).setNextValue(availableEnergyCharge);
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//		}
+//		return this.channel(RenaultZoeChannelId.AVAILABLE_ENERGY_CHARGE);
+	}
+	
+	public Channel<Integer> getSerialNumber(){
+		return this.channel(RenaultZoeChannelId.HV_BAT_SERIAL_NUMBER);
+	}
+	
+	public Channel<Integer> getBatTemp(){
+		return this.channel(RenaultZoeChannelId.HV_BATTERY_TEMP);
 	}
 		
 	private boolean isStartAllowed() {
@@ -294,13 +305,13 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 	}
 	
 
-	private boolean isFailure1() {
+	public boolean isFailure1() {
 		EnumReadChannel hvBatLevel1FailureChannel = this.channel(RenaultZoeChannelId.HV_BAT_LEVEL1_FAILURE);
 		HvBatLevel1Failure hvBatLevel1Failure = hvBatLevel1FailureChannel.value().asEnum();
 		return hvBatLevel1Failure == HvBatLevel1Failure.CAUTION_LEVEL_1_DEFAULT;
 	}
 
-	private boolean isFailure2() {
+	public boolean isFailure2() {
 		EnumReadChannel hvBatLevel2FailureChannel = this.channel(RenaultZoeChannelId.HV_BAT_LEVEL2_FAILURE);
 		HvBatLevel2Failure hvBatLevel2Failure = hvBatLevel2FailureChannel.value().asEnum();
 		return hvBatLevel2Failure == HvBatLevel2Failure.FAILURE_LEVEL_2_DEFAULT;
@@ -317,7 +328,6 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 
 	private boolean isSystemStopped() {
 		return true;
-		
 //		EnumReadChannel powerRelayStateChannel = this.channel(RenaultZoeChannelId.POWER_RELAY_STATE);
 //		PowerRelayState powerRelayState = powerRelayStateChannel.value().asEnum();
 //		return powerRelayState == PowerRelayState.OPENED;
@@ -413,8 +423,6 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 			
 			this.channel(RenaultZoeChannelId.HV_BAT_INSTANT_CURRENT).setNextValue((float)((-1)*((curOpt.get()*0.25) - 500)));
 			this.channel(Battery.ChannelId.CURRENT).setNextValue(((-1000)*((curOpt.get()*0.25) - 500)));
-			
-			
 		});
 
 		this.channel(RenaultZoeChannelId.HV_NETWORK_VOLTAGE).onChange((oldValue, newValue) -> {
@@ -425,7 +433,25 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 			}
 			this.channel(Battery.ChannelId.VOLTAGE).setNextValue((int) (vOpt.get()));
 		});
-
+		
+		this.channel(RenaultZoeChannelId.CELL_HIGHEST_VOLTAGE).onChange((oldValue, newValue) -> {
+			@SuppressWarnings("unchecked")
+			Optional<Integer> cellVoltMaxOpt = (Optional<Integer>) newValue.asOptional();
+			if (!cellVoltMaxOpt.isPresent()) {
+				return;
+			}
+			this.channel(Battery.ChannelId.MAX_CELL_VOLTAGE).setNextValue((int) (cellVoltMaxOpt.get()));
+		});
+		
+		this.channel(RenaultZoeChannelId.CELL_LOWEST_VOLTAGE).onChange((oldValue, newValue) -> {
+			@SuppressWarnings("unchecked")
+			Optional<Integer> cellVoltMinOpt = (Optional<Integer>) newValue.asOptional();
+			if (!cellVoltMinOpt.isPresent()) {
+				return;
+			}
+			this.channel(Battery.ChannelId.MIN_CELL_VOLTAGE).setNextValue((int) (cellVoltMinOpt.get()));
+		});
+		
 		this.channel(RenaultZoeChannelId.AVAILABLE_POWER).onChange((oldValue, newValue) -> {
 			@SuppressWarnings("unchecked")
 			Optional<Integer> disPowerOpt = (Optional<Integer>) newValue.asOptional();
@@ -444,6 +470,15 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 			}
 			int voltage = (int) this.channel(RenaultZoeChannelId.HV_NETWORK_VOLTAGE).value().get();
 			this.channel(Battery.ChannelId.CHARGE_MAX_CURRENT).setNextValue(((int) (chaPowerOpt.get()) / voltage));
+		});
+		
+		this.channel(RenaultZoeChannelId.USER_SOC).onChange((oldValue, newValue) -> {
+			@SuppressWarnings("unchecked")
+			Optional<Integer> socOpt = (Optional<Integer>) newValue.asOptional();
+			if (!socOpt.isPresent()) {
+				return;
+			}
+			this.channel(Battery.ChannelId.SOC).setNextValue(socOpt.get());
 		});
 	}
 
