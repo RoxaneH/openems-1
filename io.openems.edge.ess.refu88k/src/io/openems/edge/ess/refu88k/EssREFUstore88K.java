@@ -584,6 +584,11 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	public Power getPower() {
 		return this.power;
 	}
+	
+	public String getSerialNumber(){
+		return this.channel(REFUStore88KChannelId.SN).value().asString();
+	}
+	
 
 	@Override
 	public void applyPower(int activePower, int reactivePower) throws OpenemsNamedException {
@@ -914,6 +919,15 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 
 	}
 
+	public boolean readValueFromBooleanChannel(REFUStore88KChannelId refuStor88kChannelId) {
+	StateChannel r = this.channel(refuStor88kChannelId);
+	Optional<Boolean> bOpt = r.value().asOptional();
+	return bOpt.orElse(true);
+
+//	return bOpt.isPresent() && bOpt.get();
+}
+	
+	
 	@Override
 	public String debugLog() {
 		return "State:" + this.channel(REFUStore88KChannelId.ST).value().asOptionString() //
