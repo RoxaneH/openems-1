@@ -2,6 +2,7 @@ package io.openems.edge.project.renault.tmhmodbus;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.osgi.service.component.ComponentContext;
@@ -90,7 +91,7 @@ public abstract class AbstractRenaultModbusApi extends AbstractOpenemsComponent
 			return;
 		}
 
-		Collection<BatteryRenaultZoe> batteries = new ArrayList<BatteryRenaultZoe>();
+		List<BatteryRenaultZoe> batteries = new ArrayList<BatteryRenaultZoe>();
 		for (String batteryId : batteryIds) {
 			Battery b = getComponentManager().getComponent(batteryId);
 			if (b instanceof BatteryRenaultZoe) {
@@ -98,7 +99,7 @@ public abstract class AbstractRenaultModbusApi extends AbstractOpenemsComponent
 			}
 		}
 		
-		Collection<EssREFUstore88K> inverters = new ArrayList<EssREFUstore88K>();
+		List<EssREFUstore88K> inverters = new ArrayList<EssREFUstore88K>();
 		for (String inverterId : inverterIds) {
 			SymmetricEss i = getComponentManager().getComponent(inverterId);
 			if (i instanceof EssREFUstore88K) {
