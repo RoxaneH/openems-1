@@ -527,24 +527,28 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 						m(RenaultZoeChannelId.LBCRUN_ANSWER_RCY, new UnsignedWordElement(0x82)), //
 						m(RenaultZoeChannelId.HV_BATTERY_MAX_TEMP_RCY, new UnsignedWordElement(0x83)), //
 						m(RenaultZoeChannelId.HV_POWER_CONNECTION_RCY, new UnsignedWordElement(0x84)), //
-						m(RenaultZoeChannelId.HV_BAT_LEVEL2_FAILURE_RCY, new UnsignedWordElement(0x85)), //
-						m(RenaultZoeChannelId.SAFETY_MODE_1_FLAG_RCY, new UnsignedWordElement(0x86)), //
-						m(RenaultZoeChannelId.LBCPRUN_KEY_RCY, new UnsignedWordElement(0x87)), //
-						m(RenaultZoeChannelId.VEHICLE_ID, new UnsignedWordElement(0x88)), //
-						m(RenaultZoeChannelId.END_OF_CHARGE_REQUEST, new UnsignedWordElement(0x89)), //
-						m(RenaultZoeChannelId.LBC_REFUSE_TO_SLEEP, new UnsignedWordElement(0x8A)), //
-						m(RenaultZoeChannelId.ISOL_DIAG_AUTHORISATION, new UnsignedWordElement(0x8B)), //
-						m(RenaultZoeChannelId.SAFETY_MODE_1_FLAG, new UnsignedWordElement(0x8C))), //
+						m(RenaultZoeChannelId.HV_BAT_LEVEL1_FAILURE_RCY, new UnsignedWordElement(0x85)), //
+						m(RenaultZoeChannelId.HV_BAT_LEVEL2_FAILURE_RCY, new UnsignedWordElement(0x86)), //
+						m(RenaultZoeChannelId.SAFETY_MODE_1_FLAG_RCY, new UnsignedWordElement(0x87)), //
+						m(RenaultZoeChannelId.LBCPRUN_KEY_RCY, new UnsignedWordElement(0x88)), //
+						m(RenaultZoeChannelId.VEHICLE_ID, new UnsignedWordElement(0x89)), //
+						m(RenaultZoeChannelId.END_OF_CHARGE_REQUEST, new UnsignedWordElement(0x8A)), //
+						m(RenaultZoeChannelId.LBC_REFUSE_TO_SLEEP, new UnsignedWordElement(0x8B)), //
+						m(RenaultZoeChannelId.ISOL_DIAG_AUTHORISATION, new UnsignedWordElement(0x8C)), //
+						m(RenaultZoeChannelId.SAFETY_MODE_1_FLAG, new UnsignedWordElement(0x8D))), //
 
 				new FC16WriteRegistersTask(0x8D, //
-						m(RenaultZoeChannelId.START_STOP, new UnsignedDoublewordElement(0x8D)) //
-
+						m(RenaultZoeChannelId.START_STOP, new UnsignedDoublewordElement(0x8E))), //
+						
+				new FC3ReadRegistersTask(0x8F, Priority.HIGH, //
+						m(RenaultZoeChannelId.STEP, new UnsignedWordElement(0x8F)),
+						m(RenaultZoeChannelId.BSMU_SLAVE_ADDRESS, new UnsignedWordElement(0x90))) //
 				)
 
 //						new DummyRegisterElement(0x8D, 0x15F),
 //						m(RenaultZoeChannelId.STR_ST, new UnsignedWordElement(0x160), //
 //								ElementToChannelConverter.SCALE_FACTOR_MINUS_1)
-		)//
+		//
 //
 //				new FC6WriteRegisterTask(0x161, //
 //						m(RenaultZoeChannelId.EN_STRING, new UnsignedWordElement(0x161)) //
