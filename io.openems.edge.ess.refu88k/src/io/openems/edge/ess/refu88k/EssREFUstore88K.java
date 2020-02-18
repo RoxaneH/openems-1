@@ -589,6 +589,32 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 		return this.channel(REFUStore88KChannelId.SN).value().asString();
 	}
 	
+	public Channel<Integer> getDcVoltage(){
+		return this.channel(REFUStore88KChannelId.DCV);
+	}
+	
+	public Channel<Integer> getAcVoltage(){
+		return this.channel(REFUStore88KChannelId.PP_VPH_AB);
+	}
+	
+	public Channel<Integer> getAcCurrent(){
+		return this.channel(REFUStore88KChannelId.A);
+	}
+	
+	public Channel<Integer> getActivePower(){
+		return this.channel(REFUStore88KChannelId.W);
+	}
+	
+	public Channel<Integer> getReactivePower(){
+		return this.channel(REFUStore88KChannelId.VA_R);
+	}
+	
+	public Channel<Integer> getApparentPower(){
+		return this.channel(REFUStore88KChannelId.VA);
+	}
+	
+	
+	
 
 	@Override
 	public void applyPower(int activePower, int reactivePower) throws OpenemsNamedException {
@@ -651,6 +677,12 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	public int getPowerPrecision() {
 		return MAX_APPARENT_POWER / 1000;
 	}
+	
+	
+	public Channel<OperatingState> getOperatingState () {
+		return this.channel(REFUStore88KChannelId.ST);
+	}
+	
 	
 	public int getInverterId() {
 		return this.inverterId;
