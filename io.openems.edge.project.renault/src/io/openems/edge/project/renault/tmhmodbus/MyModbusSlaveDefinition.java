@@ -18,10 +18,13 @@ import io.openems.edge.common.channel.ChannelId;
 import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.channel.IntegerReadChannel;
 import io.openems.edge.common.channel.StateChannel;
+import io.openems.edge.common.component.ComponentManager;
 import io.openems.edge.common.modbusslave.ModbusRecord;
 import io.openems.edge.common.sum.Sum;
+import io.openems.edge.ess.api.ManagedSymmetricEss;
 import io.openems.edge.ess.api.SymmetricEss;
 import io.openems.edge.ess.refu88k.EssREFUstore88K;
+import io.openems.edge.ess.refu88k.OperatingState;
 import io.openems.edge.ess.refu88k.REFUStore88KChannelId;
 import io.openems.edge.project.renault.battery.renaultzoe.BatteryRenaultZoe;
 import io.openems.edge.project.renault.battery.renaultzoe.RenaultZoeChannelId;
@@ -35,8 +38,9 @@ public class MyModbusSlaveDefinition {
 	 * 
 	 * @return a map of modbus offset by record
 	 */
+	
 
-	protected static TreeMap<Integer, ModbusRecord> getModbusSlaveDefinition(Sum sum,
+	protected static TreeMap<Integer, ModbusRecord> getModbusSlaveDefinition(ComponentManager componentManager, Sum sum,
 			List<BatteryRenaultZoe> batteries, List<EssREFUstore88K> inverters, int technicalUnitId) {
 
 		ModbusSlaveDefinitionBuilder b = ModbusSlaveDefinitionBuilder.of();
@@ -64,6 +68,7 @@ public class MyModbusSlaveDefinition {
 //				}); //
 //				
 
+		
 		/*
 		 * Technical Unit Level Points
 		 */
@@ -311,11 +316,11 @@ public class MyModbusSlaveDefinition {
 		 * Battery Level Points
 		 */
 
-		for (int i = 0; i < batteries.size(); i++) {
-		
+		for (int i = 1; i < batteries.size(); i++) {
+			int batteryPoints = 15;
 			BatteryRenaultZoe bms = batteries.get(i);
 			
-			b.uint32Supplier(1026 + i*15, "Battery-ID (SerialNumber) " + i, () -> {
+			b.uint32Supplier((1026 + (i-1)*batteryPoints), "Battery-ID (SerialNumber) " + i, () -> {
 				int serialNumber = 0;
 				try {
 					serialNumber = bms.getSerialNumber().value().get();
@@ -325,7 +330,7 @@ public class MyModbusSlaveDefinition {
 				return serialNumber;
 			});
 			
-			b.uint16Supplier(1028 + i*15, "Battery Pack Status" + i, () -> {
+			b.uint16Supplier((1028 + (i-1)*batteryPoints), "Battery Pack Status" + i, () -> {
 				State state = bms.getStateMachineState();
 				SystemStatus systemStatus = SystemStatus.UNDEFINED;
 					switch (state) {
@@ -358,7 +363,7 @@ public class MyModbusSlaveDefinition {
 			});
 			
 			
-			b.uint16Supplier(1029 + i*15, "State of Charge Battery " + i, () -> {
+			b.uint16Supplier((1029 + (i-1)*batteryPoints), "State of Charge Battery " + i, () -> {
 				int soc = 0;
 				try {
 					soc = bms.getSoc().value().get();
@@ -368,11 +373,11 @@ public class MyModbusSlaveDefinition {
 				return (short) soc;
 			});
 			
-			b.uint16Supplier(1030 + i*15, "Daily Energy Throughput Battery " + i, () -> {
+			b.uint16Supplier((1030 + (i-1)*batteryPoints), "Daily Energy Throughput Battery " + i, () -> {
 				return (short) 0;
 			});
 			
-			b.uint16Supplier(1031 + i*15, "Battery Pack " + i + " Voltage", () -> {
+			b.uint16Supplier((1031 + (i-1)*batteryPoints), "Battery Pack " + i + " Voltage", () -> {
 				int voltage = 0;
 				try {
 					voltage = bms.getVoltage().value().get();
@@ -382,7 +387,7 @@ public class MyModbusSlaveDefinition {
 				return (short) voltage;
 			});
 			
-			b.uint16Supplier(1032 + i*15, "Battery Pack " + i + " Cell Voltage-Maximum", () -> {
+			b.uint16Supplier((1032 + (i-1)*batteryPoints), "Battery Pack " + i + " Cell Voltage-Maximum", () -> {
 				int cellVoltageMax = 0;
 				try {
 					cellVoltageMax = bms.getMaxCellVoltage().value().get();
@@ -392,7 +397,7 @@ public class MyModbusSlaveDefinition {
 				return (short) cellVoltageMax;
 			});
 			
-			b.uint16Supplier(1033 + i*15, "Battery Pack " + i + " Cell Voltage-Minimum", () -> {
+			b.uint16Supplier((1033 + (i-1)*batteryPoints), "Battery Pack " + i + " Cell Voltage-Minimum", () -> {
 				int cellVoltageMin = 0;
 				try {
 					cellVoltageMin = bms.getMinCellVoltage().value().get();
@@ -402,7 +407,7 @@ public class MyModbusSlaveDefinition {
 				return (short) cellVoltageMin;
 			});
 			
-			b.uint16Supplier(1034 + i*15, "Battery Pack " + i + " Current", () -> {
+			b.uint16Supplier((1034 + (i-1)*batteryPoints), "Battery Pack " + i + " Current", () -> {
 				int current = 0;
 				try {
 					current = bms.getCurrent().value().get();
@@ -412,7 +417,7 @@ public class MyModbusSlaveDefinition {
 				return (short) current;
 			});
 			
-			b.uint16Supplier(1035 + i*15, "Battery Pack " + i + " Temperature", () -> {
+			b.uint16Supplier((1035 + (i-1)*batteryPoints), "Battery Pack " + i + " Temperature", () -> {
 				int temp = 0;
 				try {
 					temp = bms.getBatTemp().value().get();
@@ -423,23 +428,23 @@ public class MyModbusSlaveDefinition {
 			});
 			
 			// Not Available from Battery! Return 0!
-			b.uint16Supplier(1036 + i*15, "Battery " + i + " State of Health", () -> {
+			b.uint16Supplier((1036 + (i-1)*batteryPoints), "Battery " + i + " State of Health", () -> {
 				return (short) 0;
 			});
 			
-			b.uint16Supplier(1037 + i*15, "Battery " + i + " Spare A", () -> {
+			b.uint16Supplier((1037 + (i-1)*batteryPoints), "Battery " + i + " Spare A", () -> {
 				return (short) 0;
 			});
 			
-			b.uint16Supplier(1038 + i*15, "Battery " + i + " Spare B", () -> {
+			b.uint16Supplier((1038 + (i-1)*batteryPoints), "Battery " + i + " Spare B", () -> {
 				return (short) 0;
 			});
 			
-			b.uint16Supplier(1039 + i*15, "Battery " + i + " Spare C", () -> {
+			b.uint16Supplier((1039 + (i-1)*batteryPoints), "Battery " + i + " Spare C", () -> {
 				return (short) 0;
 			});
 			
-			b.uint16Supplier(1040 + i*15, "Battery " + i + " Spare D", () -> {
+			b.uint16Supplier((1040 + (i-1)*batteryPoints), "Battery " + i + " Spare D", () -> {
 				return (short) 0;
 			});
 		}
@@ -448,11 +453,11 @@ public class MyModbusSlaveDefinition {
 		 * Inverter Level Points
 		 */
 
-		for (int i = 0; i < inverters.size(); i++) {
-			
+		for (int i = 1; i < inverters.size(); i++) {
+			int inverterPoints = 12;
 			EssREFUstore88K ess = inverters.get(i);
 			
-			b.uint32Supplier(1041 + i*15, "Inverter-ID (SerialNumber) " + i, () -> {
+			b.uint32Supplier((1206 + (i-1)*inverterPoints), "Inverter-ID (SerialNumber) " + i, () -> {
 				int serialNumber = 0;
 				try {
 					 String string = ess.getSerialNumber();
@@ -462,6 +467,123 @@ public class MyModbusSlaveDefinition {
 				}
 				return serialNumber;
 			});
+			
+			b.uint16Supplier((1208 + (i-1)*inverterPoints), "Inverter " + i + " Status", () -> {
+
+				OperatingState operatingState = ess.getOperatingState().value().asEnum();
+				SystemStatus systemStatus = SystemStatus.UNDEFINED;
+				
+				switch (operatingState) {
+					case UNDEFINED:
+						break;
+					case OFF:
+						systemStatus = SystemStatus.OFF;
+						break;
+					case SLEEPING:
+						systemStatus = SystemStatus.SLEEP;
+						break;
+					case STARTING:
+						systemStatus = SystemStatus.STARTUP;
+						break;
+					case MPPT:
+						systemStatus = SystemStatus.ON;
+						break;
+					case THROTTLED:
+						systemStatus = SystemStatus.ON;
+						break;
+					case SHUTTING_DOWN:
+						systemStatus = SystemStatus.OFF;
+						break;
+					case FAULT:
+						systemStatus = SystemStatus.FAULT;
+						break;
+					case STANDBY:
+						systemStatus = SystemStatus.STANDBY;
+						break;
+					case STARTED:
+						systemStatus = SystemStatus.SLEEP;
+						break;
+					}
+				return (short) systemStatus.getValue();
+			});
+			
+			b.uint16Supplier((1209 + (i-1)*inverterPoints), "Inverter " + i + " DC Voltage", () -> {
+				int dcVoltage = 0;
+				try {
+					dcVoltage = ess.getDcVoltage().value().get();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				return (short) dcVoltage;
+			});
+			
+			b.uint16Supplier((1210 + (i-1)*inverterPoints), "Inverter " + i + " AC Voltage", () -> {
+				int acVoltage = 0;
+				try {
+					acVoltage = ess.getAcVoltage().value().get();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				return (short) acVoltage;
+			});
+			
+			b.uint16Supplier((1211 + (i-1)*inverterPoints), "Inverter " + i + " AC Current", () -> {
+				int acCurrent = 0;
+				try {
+					acCurrent = ess.getAcCurrent().value().get();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				return (short) acCurrent;
+			});
+			
+			b.uint16Supplier((1212 + (i-1)*inverterPoints), "Inverter " + i + " Active Power", () -> {
+				int activePower = 0;
+				try {
+					activePower = ess.getActivePower().value().get();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				return (short) activePower;
+			});
+			
+			b.uint16Supplier((1213 + (i-1)*inverterPoints), "Inverter " + i + " Reactive Power", () -> {
+				int reactivePower = 0;
+				try {
+					reactivePower = ess.getReactivePower().value().get();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				return (short) reactivePower;
+			});
+			
+			b.uint16Supplier((1214 + (i-1)*inverterPoints), "Inverter " + i + " Apparent Power", () -> {
+				int apparentPower = 0;
+				try {
+					apparentPower = ess.getReactivePower().value().get();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				return (short) apparentPower;
+			});
+			
+			b.uint16Supplier((1215 + (i-1)*inverterPoints), "Inverter " + i + " Spare A", () -> {
+				return (short) 0;
+			});
+			
+			b.uint16Supplier((1216 + (i-1)*inverterPoints), "Inverter " + i + " Spare B", () -> {
+				return (short) 0;
+			});
+			
+			b.uint16Supplier((1217 + (i-1)*inverterPoints), "Inverter " + i + " Spare C", () -> {
+				return (short) 0;
+			});
+			
+			b.uint16Supplier((1218 + (i-1)*inverterPoints), "Inverter " + i + " Spare D", () -> {
+				return (short) 0;
+			});
+			
+			
 		}
 		
 		
@@ -471,14 +593,18 @@ public class MyModbusSlaveDefinition {
 		/*************
 		 * TMH-to-ESS
 		 * 
-		 * Implemented as "holding registers" with address offset 40000. See
+		 * Implemented as "holding registers" with address offset 0. See
 		 * https://en.wikipedia.org/wiki/Modbus#Modbus_object_types
 		 *************/
 
 		/*
 		 * Technical Unit Level Points
 		 */
-//				.uint16Consumer(40000,
+		
+		/**
+		 * Beispiel
+		 */
+//				.uint16Consumer(0,
 //						"System Status: The system state command from TMH to Technical Unit- reference table below",
 //						(value) -> {
 //							System.out.println("Trying to write [" + value + "] to System Status");
@@ -487,7 +613,66 @@ public class MyModbusSlaveDefinition {
 //		
 //				for (Battery bat : batteries) {
 //					b.float64(0, "asdf", bat.getCurrent().value().orElse(0));
-//				}				
-		return b.build();
+//				}	
+		
+				b.uint16Consumer(0,"System Status: ",(value) -> {
+					System.out.println("Trying to write [" + value + "] to System Status");
+				}); //
+		
+				b.uint32Consumer(1,"Power Request Active Power: ",(value) -> {
+					System.out.println("Trying to write [" + value + "] to Active Power");
+					ManagedSymmetricEss ess = componentManager.getComponent("ess0");
+					ess.getSetActivePowerEquals().setNextValue(value);
+				}); //
+				
+				b.uint32Consumer(3,"Power Request Reactive Power: ",(value) -> {
+					System.out.println("Trying to write [" + value + "] to Reactive Power");
+					ManagedSymmetricEss ess = componentManager.getComponent("ess0");
+					ess.getSetReactivePowerEquals().setNextValue(value);
+				}); //
+				
+				b.uint16Consumer(5,"Error Reset: ",(value) -> {
+					System.out.println("Trying to write [" + value + "] to Error Reset");
+				}); //
+				
+				b.uint16Consumer(6,"Battery Error Data Request: ",(value) -> {
+					System.out.println("Trying to write [" + value + "] to Error Reset");
+				}); //
+				
+				b.uint16Consumer(7,"Alive Counter: ",(value) -> {
+					System.out.println("Trying to write [" + value + "] to Alive Counter");
+				}); //
+				
+				
+				for (Battery bat : batteries) {
+					b.float64(0, "asdf", bat.getCurrent().value().orElse(0));
+				}	
+		
+		/*
+		 * Inverter Level Points (Just for testing purposes!)
+		 */
+				
+				
+				for (int i = 1; i < inverters.size(); i++) {
+					int inverterPoints = 5;
+					EssREFUstore88K ess = inverters.get(i);
+					
+					b.uint16Consumer((8 +(i-1)*inverterPoints),"Inverter Status " + i + ":",(value) -> {
+						System.out.println("Trying to write [" + value + "] to System Status");
+						ess.getSetActivePowerEquals().setNextValue(value);
+					}); //
+					
+					b.uint32Consumer((9 +(i-1)*inverterPoints),"Power Request Active Power " + i + ":",(value) -> {
+						System.out.println("Trying to write [" + value + "] to System Status");
+						ess.getSetActivePowerEquals().setNextValue(value);
+					}); //
+					
+					b.uint32Consumer((12 +(i-1)*inverterPoints),"Power Request Rective Power " + i + ":",(value) -> {
+						System.out.println("Trying to write [" + value + "] to System Status");
+						ess.getSetActivePowerEquals().setNextValue(value);
+					}); //
+				}
+
+				return b.build();
 	}
 }

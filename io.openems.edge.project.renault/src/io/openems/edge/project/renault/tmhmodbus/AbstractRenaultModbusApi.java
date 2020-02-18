@@ -78,10 +78,9 @@ public abstract class AbstractRenaultModbusApi extends AbstractOpenemsComponent
 		this.processImage = new MyProcessImage(this);
 	}
 
-
-	
 	protected void activate(ComponentContext context, String id, String alias, boolean enabled, int apiTimeout,
-			int technicalUnitId, String[] batteryIds, String[] inverterIds) throws ModbusException, OpenemsNamedException {
+			int technicalUnitId, String[] batteryIds, String[] inverterIds)
+			throws ModbusException, OpenemsNamedException {
 		super.activate(context, id, alias, enabled);
 
 		this.apiWorker.setTimeoutSeconds(apiTimeout);
@@ -98,7 +97,7 @@ public abstract class AbstractRenaultModbusApi extends AbstractOpenemsComponent
 				batteries.add((BatteryRenaultZoe) b);
 			}
 		}
-		
+
 		List<EssREFUstore88K> inverters = new ArrayList<EssREFUstore88K>();
 		for (String inverterId : inverterIds) {
 			SymmetricEss i = getComponentManager().getComponent(inverterId);
@@ -106,16 +105,15 @@ public abstract class AbstractRenaultModbusApi extends AbstractOpenemsComponent
 				inverters.add((EssREFUstore88K) i);
 			}
 		}
-	
-	
+
 		// Initialize Modbus Records
-		this.initalizeModbusRecords(
-				MyModbusSlaveDefinition.getModbusSlaveDefinition(this.getComponentManager().getComponent(OpenemsConstants.SUM_ID), batteries, inverters, technicalUnitId));
+		this.initalizeModbusRecords(MyModbusSlaveDefinition.getModbusSlaveDefinition(this.getComponentManager(),
+				this.getComponentManager().getComponent(OpenemsConstants.SUM_ID), batteries, inverters,
+				technicalUnitId));
 		// Start Modbus-Server
 		this.startApiWorker.activate(id);
 	}
-		
-		
+
 	protected void deactivate() {
 		this.startApiWorker.deactivate();
 		ModbusSlaveFactory.close();
