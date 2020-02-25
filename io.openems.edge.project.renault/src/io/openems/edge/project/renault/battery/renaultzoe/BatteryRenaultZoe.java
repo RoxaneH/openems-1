@@ -105,6 +105,7 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 	private void handleStateMachine() {
 		log.info("BatteryRenaultZoe.handleStateMachine(): State: " + this.getStateMachineState());
 		boolean readyForWorking = false;
+		this.isEndOfCharge();
 		IntegerWriteChannel stChannel = this.channel(RenaultZoeChannelId.START_STOP);
 		try {
 			stChannel.setNextWriteValue(this.config.StartStop());
@@ -115,7 +116,7 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 
 		switch (this.getStateMachineState()) {
 		case ERROR:
-//			this.stopSystem();
+			//this.stopSystem();
 			errorDelayIsOver = LocalDateTime.now().plusSeconds(config.errorDelay());
 			this.setStateMachineState(State.ERRORDELAY);
 			break;
@@ -191,7 +192,7 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 			if (this.pendingTimestamp.plusSeconds(this.config.pendingTolerance()).isBefore(LocalDateTime.now())) {
 				// System state could not be determined, stop and start it
 				this.pendingTimestamp = null;
-//				this.stopSystem();
+				this.stopSystem();
 				this.setStateMachineState(State.OFF);
 			} else {
 				if (this.isError()) {
@@ -260,46 +261,13 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 	public Channel<Integer> getBatTemp(){
 		return this.channel(RenaultZoeChannelId.HV_BATTERY_TEMP);
 	}
-		
-	private boolean isStartAllowed() {
-		// TODO Auto-generated method stub
-		boolean startIsAllowed = false;
-		EnumReadChannel hvPowerConnectionChannel = this.channel(RenaultZoeChannelId.HV_POWER_CONNECTION);
-		HvPowerConnection hvPowerConnection = hvPowerConnectionChannel.value().asEnum();
-		
-		switch (hvPowerConnection) {
-		case UNDEFINED:
-			break;
-		case NOT_USED:
-			break;
-		case CLOSING_OF_POWER_CONTACTS_ALLOWED:
-			startIsAllowed = true;
-			break;
-		case CLOSING_OF_POWER_CONTACTS_NOT_ALLOWED:
-			startIsAllowed = true;
-			break;
-		case UNAVAILABLE_VALUE:
-			break;
-		}
-		return startIsAllowed;
-	}
-	
 	
 	private boolean isError() {
-		if (this.isFailure2()) {
-			return true;
-		}
-		return false;
+		IntegerReadChannel errorResultChannel = this.channel(RenaultZoeChannelId.ERROR_RESULT);
+		Integer errorResult = errorResultChannel.value().get();
+		return errorResult == 1;
 	}
 	
-	private boolean isWarning() {
-		if (this.isFailure1()) {
-			return true;
-		}
-		return false;
-	}
-	
-
 	public boolean isFailure1() {
 		EnumReadChannel hvBatLevel1FailureChannel = this.channel(RenaultZoeChannelId.HV_BAT_LEVEL1_FAILURE);
 		HvBatLevel1Failure hvBatLevel1Failure = hvBatLevel1FailureChannel.value().asEnum();
@@ -312,31 +280,45 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 		return hvBatLevel2Failure == HvBatLevel2Failure.FAILURE_LEVEL_2_DEFAULT;
 	}
 	
+	public boolean isSafetyMode1() {
+		EnumReadChannel safetyMode1FlagChannel = this.channel(RenaultZoeChannelId.SAFETY_MODE_1_FLAG);
+		SafetyMode1Flag safetyMode1Flag = safetyMode1FlagChannel.value().asEnum();
+		return safetyMode1Flag == SafetyMode1Flag.SAFETY_MODE_1_REQUEST;
+				
+	}
 	
-
+	private boolean isClosingRelayAllowed() {
+		EnumReadChannel hvPowerConnectionChannel = this.channel(RenaultZoeChannelId.HV_POWER_CONNECTION);
+		HvPowerConnection hvPowerConnection = hvPowerConnectionChannel.value().asEnum();
+		return hvPowerConnection == HvPowerConnection.CLOSING_OF_POWER_CONTACTS_ALLOWED;
+	}
+	
 	private boolean isSystemRunning() {
-		return true;
-//		EnumReadChannel powerRelayStateChannel = this.channel(RenaultZoeChannelId.POWER_RELAY_STATE);
-//		PowerRelayState powerRelayState = powerRelayStateChannel.value().asEnum();
-//		return powerRelayState == PowerRelayState.CLOSED;
+		EnumReadChannel powerRelayStateChannel = this.channel(RenaultZoeChannelId.POWER_RELAY_STATE);
+		PowerRelayState powerRelayState = powerRelayStateChannel.value().asEnum();
+		return powerRelayState == PowerRelayState.CLOSED;
 	}
 
 	private boolean isSystemStopped() {
-		return true;
-//		EnumReadChannel powerRelayStateChannel = this.channel(RenaultZoeChannelId.POWER_RELAY_STATE);
-//		PowerRelayState powerRelayState = powerRelayStateChannel.value().asEnum();
-//		return powerRelayState == PowerRelayState.OPENED;
+		EnumReadChannel powerRelayStateChannel = this.channel(RenaultZoeChannelId.POWER_RELAY_STATE);
+		PowerRelayState powerRelayState = powerRelayStateChannel.value().asEnum();
+		return powerRelayState == PowerRelayState.OPENED;
 	}
 
 	private void startSystem() {
 		this.log.debug("Try to start system");
-		this.isStartAllowed();
-		if (this.isStartAllowed()) {
+		if (this.isClosingRelayAllowed()) {
 			this.sendStartCommand();
-		} else {
-			this.stopSystem();
-		}
+		} 
+	}
 	
+	private boolean isEndOfCharge() {
+		EnumReadChannel endOfChargeRequestChannel = this.channel(RenaultZoeChannelId.END_OF_CHARGE_REQUEST);
+		EndOfChargeRequest endOfChargeRequest = endOfChargeRequestChannel.value().asEnum();
+		if (endOfChargeRequest == EndOfChargeRequest.END_OF_CHARGE_REQUEST) {
+			this.getChargeMaxCurrent().setNextValue(0);
+		}
+		return endOfChargeRequest == EndOfChargeRequest.END_OF_CHARGE_REQUEST;
 	}
 
 	private void sendStartCommand() {
@@ -349,13 +331,6 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 		}
 	}
 
-	private boolean isEndOfCharge() {
-		EnumReadChannel endOfChargeRequestChannel = this.channel(RenaultZoeChannelId.END_OF_CHARGE_REQUEST);
-		EndOfChargeRequest endOfChargeRequest = endOfChargeRequestChannel.value().asEnum();
-		return endOfChargeRequest == EndOfChargeRequest.END_OF_CHARGE_REQUEST;
-	}
-	
-	
 	/**
 	 * Checks whether system has an undefined state
 	 */
