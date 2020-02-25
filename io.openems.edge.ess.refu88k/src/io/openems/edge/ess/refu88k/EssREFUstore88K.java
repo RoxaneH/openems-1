@@ -211,7 +211,6 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 			 */
 			this.checkIfPowerIsAllowed();
 			this.doGridConnectedHandling();
-			this.channel(SymmetricEss.ChannelId.GRID_MODE).setNextValue(GridMode.ON_GRID);
 			break;
 		case THROTTLED:
 			/*
@@ -219,8 +218,8 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 			 * relays are closed.
 			 */
 			this.checkIfPowerIsAllowed();
-			this.timeNoPowerRequired();
-			this.channel(SymmetricEss.ChannelId.GRID_MODE).setNextValue(GridMode.ON_GRID);
+			this.checkTimeNoPowerRequired();
+			this.doGridConnectedHandling();
 			break;
 		case MPPT:
 			/*
@@ -228,8 +227,8 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 			 * relays are closed.
 			 */
 			this.checkIfPowerIsAllowed();
-			this.timeNoPowerRequired();
-			this.channel(SymmetricEss.ChannelId.GRID_MODE).setNextValue(GridMode.ON_GRID);
+			this.checkTimeNoPowerRequired();
+			this.doGridConnectedHandling();
 			break;
 		case SHUTTING_DOWN:
 			/*
@@ -464,13 +463,15 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	 * 
 	 */
 	private void doGridConnectedHandling() {
-//		checkIfPowerIsAllowed();
-		if (isPowerRequired && isPowerAllowed) {
-			EnumWriteChannel pcsSetOperation = this.channel(REFUStore88KChannelId.PCS_SET_OPERATION);
-			try {
-				pcsSetOperation.setNextWriteValue(PCSSetOperation.CONNECT_TO_GRID);
-			} catch (OpenemsNamedException e) {
-				log.error("problem occurred while trying to start grid mode" + e.getMessage());
+		this.channel(SymmetricEss.ChannelId.GRID_MODE).setNextValue(GridMode.ON_GRID);
+		if (this.getOperatingState().value().asEnum() == OperatingState.STARTED) {
+			if (isPowerRequired && isPowerAllowed) {
+				EnumWriteChannel pcsSetOperation = this.channel(REFUStore88KChannelId.PCS_SET_OPERATION);
+				try {
+					pcsSetOperation.setNextWriteValue(PCSSetOperation.START_PCS);
+				} catch (OpenemsNamedException e) {
+					log.error("problem occurred while trying to start grid mode" + e.getMessage());
+				}
 			}
 		}
 	}
