@@ -52,7 +52,9 @@ public enum RenaultZoeChannelId implements io.openems.edge.common.channel.Channe
 	START_STOP(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_WRITE)), //
 	BSMU_SLAVE_ADDRESS(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	STEP(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
+	ERROR_RESULT(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE).accessMode(AccessMode.READ_ONLY)), //
 	
+
 	
 	
 	
@@ -66,9 +68,7 @@ public enum RenaultZoeChannelId implements io.openems.edge.common.channel.Channe
 		
 	
 	// Additional Channel
-	BATTERY_ID(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE)), //
 	AVAILABLE_ENERGY_CHARGE(Doc.of(OpenemsType.INTEGER).unit(Unit.NONE)), //
-	
 	
 	
 //	STR_ST(Doc.of(StringStatus.values()).accessMode(AccessMode.READ_ONLY)), //
