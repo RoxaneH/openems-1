@@ -5,7 +5,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @ObjectClassDefinition(//
 		name = "Controller Min Discharge Period", //
-		description = "")
+		description = "Provides a minimum discharge power of the storage system for a configured time period, if a certain power peak reached.")
 @interface Config {
 
 	@AttributeDefinition(name = "Component-ID", description = "Unique ID of this Component")

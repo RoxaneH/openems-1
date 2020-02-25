@@ -1,3 +1,5 @@
-= io.openems.edge.controller.ess.mindischargeperiod
+= Minimum Discharge Period
 
-https://github.com/OpenEMS/openems/tree/develop/io.openems.edge.controller.ess.mindischargeperiod[Source Code icon:github[]]
+Provides a minimum discharge power of the storage system for a configured time period, if a certain power peak reached.
+
+https://github.com/OpenEMS/openems/tree/develop/io.openems.edge.controller.ess.mindischargeperiod[Source Code icon:github[]]= Minimum Discharge Period
