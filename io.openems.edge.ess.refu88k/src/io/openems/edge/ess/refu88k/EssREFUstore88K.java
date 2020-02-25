@@ -71,7 +71,6 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 		implements ManagedSymmetricEss, SymmetricEss, OpenemsComponent, EventHandler, ModbusSlave {
 
 	private final Logger log = LoggerFactory.getLogger(EssREFUstore88K.class);
-	private int inverterId = 0;
 	private Config config;
 
 	public static final int DEFAULT_UNIT_ID = 1;
@@ -120,7 +119,6 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 				config.modbus_id()); //
 		this.initializeBattery(config.battery_id());
 		this.config = config;
-		this.inverterId = config.inverterId();
 //		this.WATCHDOG = config.watchdoginterval();
 		this.channel(REFUStore88KChannelId.W_RTG).onChange((oldValue, newValue) -> {
 			@SuppressWarnings("unchecked")
@@ -295,13 +293,9 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	 * 
 	 */
 	private void checkIfPowerIsAllowed() {
+
 		// If the battery system is not ready no power can be applied!
-
 		this.isPowerAllowed = battery.getReadyForWorking().value().orElse(false);
-
-//		if (battery.getReadyForWorking().value().orElse(false) && checkWatchdogCounter()) {
-//			this.isPowerAllowed = true;
-//		}
 
 		// Read important Channels from battery
 		int optV = battery.getVoltage().value().orElse(0);
@@ -345,7 +339,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	 * state!
 	 * 
 	 */
-	private void timeNoPowerRequired() {
+	private void checkTimeNoPowerRequired() {
 		if (!isPowerRequired) {
 			if (timeNoPower == null) {
 				timeNoPower = LocalDateTime.now();
@@ -489,7 +483,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	private void enterStartedMode() {
 		EnumWriteChannel pcsSetOperation = this.channel(REFUStore88KChannelId.PCS_SET_OPERATION);
 		try {
-			pcsSetOperation.setNextWriteValue(PCSSetOperation.ENTER_STARTED_MODE);
+			pcsSetOperation.setNextWriteValue(PCSSetOperation.STOP_PCS);
 		} catch (OpenemsNamedException e) {
 			log.error("problem occurred while trying to enter started mode" + e.getMessage());
 		}
@@ -614,8 +608,6 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	}
 	
 	
-	
-
 	@Override
 	public void applyPower(int activePower, int reactivePower) throws OpenemsNamedException {
 
@@ -683,11 +675,6 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 		return this.channel(REFUStore88KChannelId.ST);
 	}
 	
-	
-	public int getInverterId() {
-		return this.inverterId;
-	}
-
 	/*
 	 * Supported Models First available Model = Start Address + 2 = 40002 Then 40002
 	 * + Length of Model ....
@@ -931,10 +918,14 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 				new FC16WriteRegistersTask(SUNSPEC_64800, //
 						m(REFUStore88KChannelId.ID_64800, new UnsignedWordElement(SUNSPEC_64800)), // 40225
 						m(REFUStore88KChannelId.L_64800, new UnsignedWordElement(SUNSPEC_64800 + 1)), // 40226
-						m(REFUStore88KChannelId.LOC_REM_CTL, new SignedWordElement(SUNSPEC_64800 + 2)), // 40227
-						m(REFUStore88KChannelId.PCS_HB, new SignedWordElement(SUNSPEC_64800 + 3)), // 40228
+						m(REFUStore88KChannelId.LOC_REM_CTL, new SignedWordElement(SUNSPEC_64800 + 2))), // 40227
+						
+				new FC3ReadRegistersTask(SUNSPEC_64800 + 3, Priority.LOW, //
+						m(REFUStore88KChannelId.PCS_HB, new SignedWordElement(SUNSPEC_64800 + 3)), // 40228		
 						m(REFUStore88KChannelId.CONTROLLER_HB, new SignedWordElement(SUNSPEC_64800 + 4)), // 40229
-						new DummyRegisterElement(SUNSPEC_64800 + 5),
+						new DummyRegisterElement(SUNSPEC_64800 + 5)),
+						
+				new FC16WriteRegistersTask(SUNSPEC_64800 + 6, //
 						m(REFUStore88KChannelId.PCS_SET_OPERATION, new SignedWordElement(SUNSPEC_64800 + 6)), // 40231
 						m(REFUStore88KChannelId.MAX_BAT_A_CHA, new UnsignedWordElement(SUNSPEC_64800 + 7), // 40232
 								ElementToChannelConverter.SCALE_FACTOR_MINUS_2),
@@ -946,8 +937,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 						m(REFUStore88KChannelId.MAX_A_SF, new SignedWordElement(SUNSPEC_64800 + 12)), // 40237
 						m(REFUStore88KChannelId.MAX_A_CUR_SF, new SignedWordElement(SUNSPEC_64800 + 13)), // 40238
 						m(REFUStore88KChannelId.PADDING_1, new SignedWordElement(SUNSPEC_64800 + 14)), // 40239
-						m(REFUStore88KChannelId.PADDING_2, new SignedWordElement(SUNSPEC_64800 + 15))) // 40240
-		);
+						m(REFUStore88KChannelId.PADDING_2, new SignedWordElement(SUNSPEC_64800 + 15)))); // 40240	
 
 	}
 
