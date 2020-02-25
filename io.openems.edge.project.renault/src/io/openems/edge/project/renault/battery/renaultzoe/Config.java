@@ -15,9 +15,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 	@AttributeDefinition(name = "Alias", description = "Human-readable name of this Component; defaults to Component-ID")
 	String alias() default "";
 	
-	@AttributeDefinition(name = "Battery-ID", description = "ID of this Battery")
-	int batteryId() default 1;
-	
 	@AttributeDefinition(name = "Modbus Unit-ID", description = "The Unit-ID of the Modbus device.")
 	int modbusUnitId() default 0;
 	

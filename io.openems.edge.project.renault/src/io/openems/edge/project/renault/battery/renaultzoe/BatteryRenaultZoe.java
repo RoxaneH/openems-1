@@ -93,7 +93,6 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 		super.activate(context, config.id(), config.alias(), config.enabled(), config.modbusUnitId(), this.cm, "Modbus",
 				config.modbus_id());
 		this.modbusBridgeId = config.modbus_id();
-		this.channel(RenaultZoeChannelId.BATTERY_ID).setNextValue(config.batteryId());
 		this.channel(Battery.ChannelId.CAPACITY).setNextValue(config.capacity());
 		this.doChannelMapping();
 	}
@@ -229,10 +228,6 @@ public class BatteryRenaultZoe extends AbstractOpenemsModbusComponent
 		return modbusBridgeId;
 	}
 
-	public Channel<Integer> getBatteryId() {
-		return this.channel(RenaultZoeChannelId.BATTERY_ID);
-	}
-	
 	public Channel<Integer> getAvailablePowerDischarge() {
 		return this.channel(RenaultZoeChannelId.AVAILABLE_POWER);
 	}
