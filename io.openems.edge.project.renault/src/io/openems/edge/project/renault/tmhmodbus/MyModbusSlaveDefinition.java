@@ -1,23 +1,10 @@
 package io.openems.edge.project.renault.tmhmodbus;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.TreeMap;
 
-import com.ghgande.j2mod.modbus.procimg.Register;
-
-import io.openems.common.channel.Level;
 import io.openems.edge.battery.api.Battery;
-import io.openems.edge.bridge.modbus.api.AbstractOpenemsModbusComponent;
-import io.openems.edge.bridge.modbus.api.element.BitsWordElement;
-import io.openems.edge.common.channel.BooleanReadChannel;
-import io.openems.edge.common.channel.ChannelId;
-import io.openems.edge.common.channel.Doc;
-import io.openems.edge.common.channel.IntegerReadChannel;
-import io.openems.edge.common.channel.StateChannel;
 import io.openems.edge.common.component.ComponentManager;
 import io.openems.edge.common.modbusslave.ModbusRecord;
 import io.openems.edge.common.sum.Sum;
@@ -27,7 +14,6 @@ import io.openems.edge.ess.refu88k.EssREFUstore88K;
 import io.openems.edge.ess.refu88k.OperatingState;
 import io.openems.edge.ess.refu88k.REFUStore88KChannelId;
 import io.openems.edge.project.renault.battery.renaultzoe.BatteryRenaultZoe;
-import io.openems.edge.project.renault.battery.renaultzoe.RenaultZoeChannelId;
 import io.openems.edge.project.renault.battery.renaultzoe.State;
 import io.openems.edge.project.renault.tmhmodbus.types.ModbusSlaveDefinitionBuilder;
 
@@ -75,12 +61,73 @@ public class MyModbusSlaveDefinition {
 
 		b.uint32(1000, "Technical Unit ID: Static Value", technicalUnitId); //
 
-		b.uint16Supplier(1002, "System Status: System status of the TE, see Valid System States below", () -> {
-			Level state = sum.getState().value().asEnum();
-			if (state == Level.FAULT) {
-				return (short) SystemStatus.FAULT.getValue(); // "FAULT"
+		b.uint16Supplier(1002, "System Status: System status of the TE: ", () -> {
+
+			State [] batteryStatus = new State [9];
+			OperatingState [] inverterStatus = new OperatingState[9];
+			
+			for (int i = 0; i < batteries.size(); i++) {
+				BatteryRenaultZoe bms = batteries.get(i);
+				try {
+					batteryStatus[i] = bms.getStateMachineState();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
 			}
-			return (short) SystemStatus.ON.getValue(); // "ON"
+			
+			for (int i = 0; i < inverters.size(); i++) {
+				EssREFUstore88K ess = inverters.get(i);
+				try {
+					inverterStatus[i] = ess.getOperatingState().value().asEnum();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
+			
+			SystemStatus systemStatus = SystemStatus.UNDEFINED;
+			for (int j = 0; j < inverterStatus.length - 1; j++) {
+				if (inverterStatus[j] != inverterStatus[j+1] || batteryStatus[j] != batteryStatus[j+1]) {
+					systemStatus = SystemStatus.UNDEFINED;
+					break;
+				} else {
+					if (batteryStatus[j] == State.RUNNING) {
+						switch (inverterStatus[j]) {
+						case UNDEFINED:
+							systemStatus = SystemStatus.UNDEFINED;
+							break;
+						case OFF:
+							systemStatus = SystemStatus.OFF;
+							break;
+						case SLEEPING:
+							systemStatus = SystemStatus.SLEEP;
+							break;
+						case STARTING:
+							systemStatus = SystemStatus.STARTUP;
+							break;
+						case MPPT :
+							systemStatus = SystemStatus.ON;
+							break;
+						case THROTTLED:
+							systemStatus = SystemStatus.ON;
+							break;
+						case SHUTTING_DOWN:
+							systemStatus = SystemStatus.OFF;
+							break;
+						case FAULT:
+							systemStatus = SystemStatus.FAULT;
+							break;
+						case STANDBY:
+							systemStatus = SystemStatus.STANDBY;
+							break;
+						case STARTED:
+							systemStatus = SystemStatus.SLEEP;
+							break;
+						} 
+					}
+					
+				}
+			}
+			return (short) systemStatus.getValue();
 		}); //
 
 		b.uint32Supplier(1003, "Current Measrued Active Power", () -> {
