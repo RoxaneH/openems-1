@@ -257,6 +257,16 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 		EnumReadChannel operatingStateChannel = this.channel(REFUStore88KChannelId.ST);
 		OperatingState operatingState = operatingStateChannel.value().asEnum();
 
+		BooleanWriteChannel xy = this.channel(REFUStore88KChannelId.TEST);
+		
+		try {
+			xy.setNextWriteValue(true);
+			xy.setNextValue(true);
+		} catch (OpenemsNamedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} //
+		
 		switch (operatingState) {
 		case OFF:
 			break;
