@@ -43,7 +43,6 @@ import io.openems.edge.common.channel.EnumReadChannel;
 import io.openems.edge.common.channel.EnumWriteChannel;
 import io.openems.edge.common.channel.IntegerWriteChannel;
 import io.openems.edge.common.channel.StateChannel;
-import io.openems.edge.common.channel.WriteChannel;
 import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.event.EdgeEventConstants;
 import io.openems.edge.common.modbusslave.ModbusSlave;
@@ -458,7 +457,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	 * Exit the STANDBY mode!
 	 * 
 	 */
-	private void exitStandbyMode() {
+	public void exitStandbyMode() {
 		EnumWriteChannel pcsSetOperation = this.channel(REFUStore88KChannelId.PCS_SET_OPERATION);
 		try {
 			pcsSetOperation.setNextWriteValue(PCSSetOperation.EXIT_STANDBY_MODE);
@@ -505,7 +504,7 @@ public class EssREFUstore88K extends AbstractOpenemsModbusComponent
 	 * STOP the inverter by setting the power to zero and entering the STARTED mode!
 	 * 
 	 */
-	private void stopInverter() {
+	public void stopInverter() {
 
 		this.isPowerAllowed = false;
 
